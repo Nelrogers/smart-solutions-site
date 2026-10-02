@@ -12,7 +12,9 @@ import { dirname } from 'node:path';
 
 const BASE  = process.env.PNCP_BASE || 'https://pncp.gov.br/api/consulta/v1';
 const TAM   = Number(process.env.PNCP_TAM_PAGINA || 50);   // itens por página
-const PAUSA = Number(process.env.PNCP_PAUSA_MS || 250);    // pausa entre chamadas
+const PAUSA = Number(process.env.PNCP_PAUSA_MS || 500);    // pausa entre chamadas
+const ESPERA = Number(process.env.PNCP_ESPERA_MS || 2000);  // espera base entre tentativas
+const RODADA = Number(process.env.PNCP_RODADA_MS || 60000); // espera entre rodadas de nova tentativa
 const SAIDA = process.env.RADAR_SAIDA || 'data/radar.json';
 const HIST  = process.env.RADAR_HIST  || 'data/historico.json';
 
@@ -34,16 +36,21 @@ const brData = iso => iso.split('-').reverse().join('/');
 
 async function get(path, params) {
   const url = BASE + path + '?' + new URLSearchParams(params);
-  for (let t = 1; t <= 5; t++) {
+  let ultimo = '';
+  for (let t = 1; t <= 6; t++) {
+    let espera = Math.min(ESPERA * 2 ** (t - 1), 60000);
     try {
       const r = await fetch(url, {headers: {accept: 'application/json'}, signal: AbortSignal.timeout(60000)});
       if (r.status === 204) return {data: [], totalPaginas: 0, paginasRestantes: 0};
       if (r.ok) return await r.json();
-      if (![429, 500, 502, 503, 504].includes(r.status)) { const e = new Error('HTTP ' + r.status + ' em ' + url); e.fatal = true; throw e; }
-    } catch (e) { if (e.fatal || t === 5) throw e; }
-    await sleep(1500 * t);
+      const corpo = (await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160);
+      ultimo = 'HTTP ' + r.status + (corpo ? ' ' + corpo : '');
+      if (![429, 500, 502, 503, 504].includes(r.status)) { const e = new Error(ultimo + ' em ' + url); e.fatal = true; throw e; }
+      const ra = Number(r.headers.get('retry-after')); if (ra > 0) espera = Math.min(ra * 1000, 120000);
+    } catch (e) { if (e.fatal) throw e; if (!ultimo.startsWith('HTTP')) ultimo = String(e.cause?.code || e.message); }
+    if (t < 6) await sleep(espera);
   }
-  throw new Error('Falha após várias tentativas: ' + url);
+  throw new Error('Falha após várias tentativas (' + ultimo + '): ' + url);
 }
 
 async function paginar(path, params, onItem) {
@@ -67,32 +74,52 @@ const vazio = () => ({mod: {}, modv: {}, prazo: [0,0,0,0], _abN: 0, _abV: 0});
 async function lerJSON(f, padrao) { try { return JSON.parse(await readFile(f, 'utf8')); } catch { return padrao; } }
 async function gravar(f, obj) { await mkdir(dirname(f), {recursive: true}); await writeFile(f, JSON.stringify(obj)); }
 
-// Editais com proposta aberta agora, por estado
+// Editais com proposta aberta agora, por estado (repete os estados que falharem)
 async function abertas(desde) {
   const out = Object.fromEntries(UFS.map(u => [u, vazio()]));
   const agora = Date.now(), limite = ymd(somaDias(HOJE, 730));
-  for (const uf of UFS) {
-    await paginar('/contratacoes/proposta', {dataFinal: limite, uf}, it => {
-      const enc = Date.parse(it.dataEncerramentoProposta);
-      if (enc && enc < agora) return;                       // já encerrado
-      const a = out[uf], g = grupo(it);
-      a.mod[g] = (a.mod[g] || 0) + 1; a.modv[g] = (a.modv[g] || 0) + valor(it);
-      const dias = enc ? Math.ceil((enc - agora) / 864e5) : 99;
-      a.prazo[dias <= 3 ? 0 : dias <= 7 ? 1 : dias <= 12 ? 2 : 3]++;
-      if (String(it.dataPublicacaoPncp || '').slice(0, 10) >= desde) { a._abN++; a._abV += valor(it); }
-    });
-    process.stdout.write('abertas ' + uf + ' ok\n');
+  let pend = [...UFS];
+  for (let rodada = 1; pend.length && rodada <= 3; rodada++) {
+    const falhas = [];
+    for (const uf of pend) {
+      out[uf] = vazio();
+      try {
+        await paginar('/contratacoes/proposta', {dataFinal: limite, uf}, it => {
+          const enc = Date.parse(it.dataEncerramentoProposta);
+          if (enc && enc < agora) return;                       // já encerrado
+          const a = out[uf], g = grupo(it);
+          a.mod[g] = (a.mod[g] || 0) + 1; a.modv[g] = (a.modv[g] || 0) + valor(it);
+          const dias = enc ? Math.ceil((enc - agora) / 864e5) : 99;
+          a.prazo[dias <= 3 ? 0 : dias <= 7 ? 1 : dias <= 12 ? 2 : 3]++;
+          if (String(it.dataPublicacaoPncp || '').slice(0, 10) >= desde) { a._abN++; a._abV += valor(it); }
+        });
+        process.stdout.write('abertas ' + uf + ' ok\n');
+      } catch (e) { process.stdout.write('FALHA em ' + uf + ': ' + e.message + '\n'); falhas.push(uf); }
+    }
+    pend = falhas;
+    if (pend.length && rodada < 3) { process.stdout.write('Nova tentativa para ' + pend.join(', ') + ' após uma pausa\n'); await sleep(RODADA); }
   }
+  if (pend.length) throw new Error('Não foi possível coletar os estados: ' + pend.join(', '));
   return out;
 }
 
-// Editais publicados em um dia, por estado
+// Editais publicados em um dia, por estado (cada modalidade é repetida se falhar)
 async function publicadasDia(iso) {
   const por = Object.fromEntries(UFS.map(u => [u, {n: 0, v: 0}]));
   for (const m of MODALIDADES) {
-    await paginar('/contratacoes/publicacao', {dataInicial: ymd(iso), dataFinal: ymd(iso), codigoModalidadeContratacao: m}, it => {
-      const u = ufDe(it); if (!por[u]) return; por[u].n++; por[u].v += valor(it);
-    });
+    for (let t = 1; ; t++) {
+      const loc = {};
+      try {
+        await paginar('/contratacoes/publicacao', {dataInicial: ymd(iso), dataFinal: ymd(iso), codigoModalidadeContratacao: m}, it => {
+          const u = ufDe(it); if (!por[u]) return; (loc[u] ||= {n: 0, v: 0}); loc[u].n++; loc[u].v += valor(it);
+        });
+        for (const u in loc) { por[u].n += loc[u].n; por[u].v += loc[u].v; }
+        break;
+      } catch (e) {
+        if (t >= 3) throw e;
+        process.stdout.write('Nova tentativa na modalidade ' + m + ': ' + e.message + '\n'); await sleep(RODADA);
+      }
+    }
   }
   return por;
 }
