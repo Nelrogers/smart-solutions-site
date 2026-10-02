@@ -1,9 +1,9 @@
 name: Atualizar Radar de Licitações
 on:
   schedule:
-    - cron: '0 11 * * *'
-    - cron: '0 1 * * *'
-  workflow_dispatch: {}
+    - cron: '0 11 * * *'   # 08:00 em Brasília
+    - cron: '0 1 * * *'    # 22:00 em Brasília
+  workflow_dispatch: {}      # permite rodar manualmente pelo botão "Run workflow"
 permissions:
   contents: write
 concurrency:
@@ -24,6 +24,7 @@ jobs:
         run: |
           git config user.name "radar-bot"
           git config user.email "radar-bot@users.noreply.github.com"
-          git add data/radar.json data/historico.json
+          git add -A data
           git diff --cached --quiet || git commit -m "Atualiza o Radar de Licitações"
+          git pull --rebase origin main
           git push
