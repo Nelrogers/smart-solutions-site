@@ -13,6 +13,7 @@
 // dos estados que faltaram. Assim a próxima execução continua de onde parou.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const BASE     = process.env.PNCP_BASE || 'https://pncp.gov.br/api/consulta/v1';
 const PAUSA    = Number(process.env.PNCP_PAUSA_MS || 300);      // pausa entre chamadas de cada fila
@@ -22,6 +23,7 @@ const PARALELO = Number(process.env.PNCP_PARALELO || 3);        // estados colet
 const ORC      = Number(process.env.PNCP_ORCAMENTO_MIN || 105) * 60000;  // tempo máximo de coleta
 const SAIDA    = process.env.RADAR_SAIDA || 'data/radar.json';
 const HIST     = process.env.RADAR_HIST  || 'data/historico.json';
+const CFG      = fileURLToPath(new URL('./config.json', import.meta.url));   // data de início da contagem
 let TAM = Number(process.env.PNCP_TAM_PAGINA || 0);             // 0 = descobrir o maior tamanho aceito
 
 const UFS = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
@@ -173,8 +175,15 @@ async function teste() {
 async function main() {
   if (args.includes('--teste')) return teste();
   const alvo = flag('ufs') ? flag('ufs').split(',').map(s => s.trim().toUpperCase()).filter(u => UFS.includes(u)) : UFS;
-  const h0 = await lerJSON(HIST, null), base = await lerJSON(SAIDA, null);
-  const desde = h0?.desde || flag('desde') || HOJE;
+  const cfg = await lerJSON(CFG, {}), base = await lerJSON(SAIDA, null);
+  const desdeCfg = /^\d{4}-\d{2}-\d{2}$/.test(cfg.desde || '') && cfg.desde <= HOJE ? cfg.desde : null;
+  let h0 = await lerJSON(HIST, null);
+  if (h0 && desdeCfg && h0.desde !== desdeCfg) {            // a data de início foi alterada: refaz a contagem
+    log('Data de início mudou de', h0.desde, 'para', desdeCfg, '| refazendo o histórico');
+    h0 = {desde: desdeCfg, ate: somaDias(desdeCfg, -1), ufs: Object.fromEntries(UFS.map(u => [u, {n: 0, v: 0}]))};
+    await gravar(HIST, h0);
+  }
+  const desde = h0?.desde || flag('desde') || desdeCfg || HOJE;
   log('início | estados:', alvo.length, '| paralelo:', PARALELO, '| tempo máximo:', Math.round(ORC / 60000), 'min');
   await escolherTamanho();
   const {res, pend} = await abertas(desde, alvo);
@@ -201,7 +210,7 @@ async function main() {
   }
   const faltam = [...new Set([...pend, ...(alvo.length === UFS.length ? [] : [])])];
   const sufixo = faltam.length ? ' (parcial: sem atualização em ' + faltam.join(', ') + ')' : (hist && hoje) || args.includes('--sem-dia') ? '' : ' (parcial: histórico e publicadas hoje)';
-  await gravar(SAIDA, {captura: brData(HOJE) + ' ' + brAgora().slice(11, 16) + sufixo, desde: brData(desde), fonte: 'PNCP (API de Consulta)', parcial: faltam, ufs});
+  await gravar(SAIDA, {captura: brData(HOJE) + ' ' + brAgora().slice(11, 16) + sufixo, desde: (hist && hoje) ? brData(desde) : (base?.desde || brData(desde)), fonte: 'PNCP (API de Consulta)', parcial: faltam, ufs});
   log('Radar gravado em', SAIDA, faltam.length ? '| ATENÇÃO, estados pendentes: ' + faltam.join(', ') : '| completo');
 }
 main().catch(e => { console.error('ERRO:', e.message); process.exit(1); });
