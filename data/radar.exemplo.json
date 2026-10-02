@@ -1,0 +1,14 @@
+{
+  "captura": "01/10/2026 22:00",
+  "desde": "01/10/2026",
+  "fonte": "PNCP (API de Consulta)",
+  "ufs": {
+    "GO": {
+      "mod":  {"Pregão Eletrônico": 120, "Dispensa": 80, "Concorrência": 15},
+      "modv": {"Pregão Eletrônico": 95000000, "Dispensa": 4100000, "Concorrência": 210000000},
+      "prazo": [30, 60, 70, 55],
+      "hist":  [4200, 3900, 38],
+      "histv": [2500000000, 2300000000, 21000000]
+    }
+  }
+}
