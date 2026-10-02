@@ -1,0 +1,29 @@
+name: Atualizar Radar de Licitações
+on:
+  schedule:
+    - cron: '0 11 * * *'
+    - cron: '0 1 * * *'
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: radar
+  cancel-in-progress: false
+jobs:
+  coletar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Coletar dados do PNCP
+        run: node coletor/coletar-pncp.mjs
+      - name: Gravar resultado
+        run: |
+          git config user.name "radar-bot"
+          git config user.email "radar-bot@users.noreply.github.com"
+          git add data/radar.json data/historico.json
+          git diff --cached --quiet || git commit -m "Atualiza o Radar de Licitações"
+          git push
