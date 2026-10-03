@@ -457,6 +457,10 @@ mark.dest{padding:2px 7px;border-radius:7px;color:var(--tx);font-weight:600;back
 @media (max-width:900px){.fg{grid-template-columns:1fr}}
 .fa .btn{flex:1 1 150px;padding:0 14px;font-size:14.5px;white-space:nowrap}
 .prof .tp p.bd{font-weight:700;color:var(--tx)}
+
+.pls{margin:16px 0 0;padding:14px 16px;border:1px solid #1d4468;border-radius:var(--ri);background:rgba(4,9,19,.45);text-align:center}
+.plh{margin:0 0 12px;font-size:13.5px;line-height:1.5;color:#a9bdd6}.plh b{display:block;margin-bottom:2px;font:700 15px Sora,system-ui,sans-serif;color:#eef5ff}
+.rxp{margin:12px 0 0;font-size:13.5px;color:#a9bdd6;text-align:center}.rxp .lk{font-size:13.5px}
 </style>
 <link rel="canonical" href="https://nelsonrogerio.com.br/">
 <link rel="icon" type="image/png" href="favicon.png">
@@ -525,18 +529,17 @@ mark.dest{padding:2px 7px;border-radius:7px;color:var(--tx);font-weight:600;back
 <div class="ex" id="ex"><span id="exl">Exemplos</span><div class="exc" id="exc"></div></div>
 </div>
 <div class="bp" id="b2" hidden>
-<div class="ph2"><div><h3>Perfis Smart</h3><p>Guarde conjuntos de palavras para cada mercado ou cliente.</p></div><div class="ph2r"><span class="badge" id="pcnt2">9 perfis</span><button type="button" class="pb" id="phide">Ocultar perfis</button><button type="button" class="pb" id="pnew">Novo perfil</button></div></div>
+<div class="ph2"><div><h3>Perfis Smart</h3><p>Conjuntos de palavras-chave por mercado. Escolha um, edite ou crie o seu. As alterações ficam salvas só neste aparelho e não mudam o site para outras pessoas.</p></div><div class="ph2r"><span class="badge" id="pcnt2">9 perfis</span><button type="button" class="pb" id="phide">Ocultar perfis</button><button type="button" class="pb" id="pnew">Novo perfil</button></div></div>
 <div class="ped" id="ped" hidden><input id="pn" placeholder="Nome do perfil"><textarea id="pk" rows="3" placeholder="Palavras-chave separadas por vírgula"></textarea><div class="pa"><button type="button" class="pb on" id="psave">Salvar perfil</button><button type="button" class="pb" id="pcan">Cancelar</button></div></div>
 <div class="pg" id="pg"></div>
 <button type="button" class="lk" id="prst">Restaurar perfis padrão</button>
 </div>
 <div class="ufs" id="ufs" hidden><span>Estados do Radar</span><b id="ufv"></b><button type="button" class="lk" id="ufc">limpar</button></div>
-<div class="pt"><span>Vincule os portais da busca</span></div>
-<div class="chips" id="pb"></div>
-<p class="auth">O PNCP reúne os editais da Lei 14.133: o inteiro teor de cada edital deve ser divulgado nele. <a href="https://www.planalto.gov.br/ccivil_03/_Ato2019-2022/2021/Lei/L14133.htm#art54" target="_blank" rel="noopener">Lei 14.133, art. 54</a></p>
-<div class="sa"><button type="button" class="btn b1" id="sgo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg><span>Buscar agora</span></button></div>
+<div class="sa"><button type="button" class="btn b1" id="sgo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="8" /> <path d="m21 21-4.3-4.3" /></svg><span>Buscar no PNCP</span></button></div>
 <div id="msg" role="status"></div>
-<p class="rxp"><a class="lk" href="https://radar-licitacoes-smart.nelrogers.chatgpt.site/" target="_blank" rel="noopener">Abrir o Radar completo da Smart Solutions</a></p>
+<p class="auth">O PNCP é a base oficial: a Lei 14.133 manda divulgar nele o inteiro teor de cada edital. <a href="https://www.planalto.gov.br/ccivil_03/_Ato2019-2022/2021/Lei/L14133.htm#art54" target="_blank" rel="noopener">Lei 14.133, art. 54</a></p>
+<div class="pls"><p class="plh"><b>Onde a disputa acontece</b><span>O PNCP é onde o edital é publicado. Nas plataformas abaixo acontecem a sessão e os lances, e elas exigem cadastro. Ache o edital no PNCP e abra a plataforma indicada nele.</span></p><div class="chips" id="pb"></div></div>
+<p class="rxp">Quer acesso ao Radar completo da SMART SOLUTIONS? <a class="lk" id="rxw" target="_blank" rel="noopener">Fale conosco</a></p>
 <div class="sres" id="sres" hidden></div>
 </div></div></div></div>
 <section id="radar"><div class="w">
@@ -659,27 +662,22 @@ const d=new Date(),n=Math.floor((d-new Date(d.getFullYear(),0,0))/864e5),v=V[n%V
 $("#vt").textContent="“"+v[0]+"”";$("#vr").textContent=v[1]+" (ARC)";$("#vrf").textContent=v[2];
 $("#vtg").onclick=()=>{const o=$("#vrf").hidden;$("#vrf").hidden=!o;$("#vtg").setAttribute("aria-expanded",String(o))};
 
-const PT=[["PNCP","https://pncp.gov.br/app/editais",""],["BNC","https://bnc.org.br","bnc.org.br"],["BLL","https://bll.org.br","bll.org.br"],["Licitar Digital","https://www.licitardigital.com.br","licitardigital.com.br"],["Compras Públicas","https://www.portaldecompraspublicas.com.br","portaldecompraspublicas.com.br"],["ComprasGov","https://www.gov.br/compras/pt-br","compras.gov.br"]];
-const on=new Set(["PNCP"]);
+const PL=[["ComprasGov","https://www.gov.br/compras/pt-br","Plataforma de compras do Governo Federal"],["SISLOG","https://sislog.go.gov.br/","Portal de compras do Governo do Estado de Goiás"],["BLL","https://bll.org.br","Bolsa de Licitações e Leilões"],["BNC","https://bnc.org.br","Bolsa Nacional de Compras"],["Licitar Digital","https://www.licitardigital.com.br","Plataforma de licitações"],["Compras Públicas","https://www.portaldecompraspublicas.com.br","Portal de Compras Públicas"]];
+PL.forEach(([n,u,t])=>{const a=document.createElement("a");a.className="btn chip";a.href=u;a.target="_blank";a.rel="noopener";a.textContent=n;a.title=t;$("#pb").appendChild(a)});
+$("#rxw").href=wa("Olá, Nelson! Quero conhecer o Radar completo da SMART SOLUTIONS.");
 const pn=(q,u)=>"https://pncp.gov.br/app/editais?q="+encodeURIComponent(q)+"&status=recebendo_proposta&pagina=1"+(u?"&ufs="+u:"");
-PT.forEach(([n])=>{const b=document.createElement("button");b.type="button";b.className="btn chip";b.textContent=n;b.setAttribute("aria-pressed",on.has(n));b.onclick=()=>{on.has(n)?on.delete(n):on.add(n);b.setAttribute("aria-pressed",on.has(n));sum()};$("#pb").appendChild(b)});
-const st=()=>({q:$("#q").value.trim(),S:window.RSEL||[],nm:(window.RNAMES||[]).join(" ")});
+const st=()=>({q:$("#q").value.trim(),S:window.RSEL||[]});
 const nf=n=>Number(n).toLocaleString("pt-BR");
-function urls(){const {q,S,nm}=st(),o=[];
-PT.filter(p=>on.has(p[0])).forEach(([n,h,d])=>{
-if(!d){(S.length?S:[""]).forEach(u=>o.push({l:n+(u?" em "+u:""),u:pn(q,u),t:"busca direta no PNCP"}))}
-else o.push({l:n,u:q?"https://www.google.com/search?q="+encodeURIComponent((q+" "+nm+" edital").trim())+"+site%3A"+d:h,t:q?"via Google, restrita ao site do portal":"abre o portal"})});
-return o}
+function urls(){const {q,S}=st();return (S.length?S:[""]).map(u=>({l:"PNCP"+(u?" em "+u:""),u:pn(q,u),t:"busca direta no PNCP"}))}
 function pulse(){const p=$("#pulse"),R=window.RSUM;if(!R){p.hidden=true;return}const S=st().S;p.hidden=false;p.textContent="";
 const d=document.createElement("i");d.className="dot2";const t=document.createElement("span");
 t.textContent=R.demo?"Radar em demonstração: números ilustrativos.":"Hoje no PNCP"+(S.length?" em "+S.join(", "):"")+": "+nf(R.abertas)+" editais abertos e "+nf(R.hoje)+" publicados hoje. Captura "+R.captura+".";
 p.append(d,t)}
 function sum(){const {q,S}=st();$("#ufs").hidden=!S.length;$("#ufv").textContent=S.join(", ");pulse();
-$("#msg").textContent=on.size?"Pronto para buscar"+(q?" “"+q+"”":" todos os editais abertos")+(S.length?" em "+S.join(", "):"")+" em "+on.size+(on.size===1?" portal.":" portais."):"Marque ao menos um portal para buscar."}
+$("#msg").textContent="Pronto para buscar"+(q?" “"+q+"”":" todos os editais abertos")+(S.length?" em "+S.join(", "):"")+" no PNCP."}
 function results(){const U=urls(),r=$("#sres"),{q,S}=st();r.hidden=false;r.innerHTML="";
 const h=document.createElement("p");const cx=document.createElement("button");cx.type="button";cx.className="lk";cx.textContent="Fechar lista";cx.onclick=()=>{r.hidden=true};
-if(!U.length){h.textContent="Marque ao menos um portal para buscar. ";h.appendChild(cx);r.appendChild(h);return U}
-h.textContent="Sua busca está pronta"+(q?" para “"+q+"”":"")+(S.length?" em "+S.join(", "):"")+". Abra cada portal abaixo: ";h.appendChild(cx);r.appendChild(h);
+h.textContent="Sua busca está pronta"+(q?" para “"+q+"”":"")+(S.length?" em "+S.join(", "):"")+". Abra abaixo: ";h.appendChild(cx);r.appendChild(h);
 U.forEach(x=>{const a=document.createElement("a");a.className="rl";a.href=x.u;a.target="_blank";a.rel="noopener";a.innerHTML="<b></b><em></em>";a.children[0].textContent=x.l;a.children[1].textContent=x.t;r.appendChild(a)});
 const K=window.PFK||[];if(K.length){const d=document.createElement("div");d.className="pk";const lb=document.createElement("span");lb.textContent=S.length>1?"Palavras do perfil: toque em uma para pesquisar nos estados escolhidos":"Palavras do perfil no PNCP";d.appendChild(lb);
 K.forEach(k=>{const a=document.createElement("a");a.className="btn chip";a.textContent=k;a.target="_blank";a.rel="noopener";
@@ -689,7 +687,7 @@ const c=document.createElement("div");c.className="cta2";const cp=document.creat
 const ca=document.createElement("a");ca.className="btn b1";ca.target="_blank";ca.rel="noopener";const ic=document.querySelector("header [data-wa] svg");if(ic)ca.appendChild(ic.cloneNode(true));const cs=document.createElement("span");cs.textContent="Quero uma análise";ca.appendChild(cs);
 ca.href=wa("Olá, Nelson! Pesquisei"+(q?" “"+q+"”":" editais")+(S.length?" em "+S.join(", "):"")+" no site e encontrei um edital. Quero uma análise antes de participar.");
 c.append(cp,ca);r.appendChild(c);return U}
-$("#sgo").onclick=()=>{const U=results();if(!U.length){$("#msg").textContent="Marque ao menos um portal para buscar.";return}U.forEach(x=>{try{window.open(x.u,"_blank","noopener")}catch(e){}});$("#msg").textContent="Busca aberta. Se alguma aba não abriu, o navegador bloqueou: use os botões da lista abaixo."};
+$("#sgo").onclick=()=>{const U=results();U.forEach(x=>{try{window.open(x.u,"_blank","noopener")}catch(e){}});$("#msg").textContent="Busca aberta no PNCP. Se alguma aba não abriu, o navegador bloqueou: use os botões da lista abaixo."};
 $("#q").addEventListener("input",sum);["radar:sel","pf:chg"].forEach(e=>window.addEventListener(e,sum));sum();
 $("#ufc").onclick=()=>{const c=document.getElementById("rclr");if(c)c.click()};
 
