@@ -1,0 +1,238 @@
+/* Painel de campanha mensal SMART SOLUTIONS
+   Faixa animada: logo ao centro, trilhas de circuito com pulsos de luz, laços e textos do mês.
+   O mês é escolhido sozinho (horário de Brasília) ou fixado com data-mes="11". */
+
+.ssp{
+  --c1:#2E8BFF; --c2:#2E8BFF; --cl:#A9D2FF;
+  --ssp-bg:#04080e; --ssp-ln:#10233b;
+  --ssp-tx:#EEF5FF; --ssp-mut:#B4C6DD; --ssp-dim:#8EA3BD;
+  --ssp-teal:#40D0BF; --ssp-green:#66DF93;
+  container-type:inline-size; container-name:ssp;
+  position:relative; overflow:hidden; isolation:isolate;
+  margin:0; padding:0; /* o site aplica padding a todo <section> */
+  background:var(--ssp-bg); color:var(--ssp-tx);
+  border-bottom:1px solid var(--ssp-ln);
+}
+.ssp *{box-sizing:border-box}
+.ssp p{margin:0}
+.ssp-fx{position:absolute; inset:0; width:100%; height:100%; display:block; z-index:0; pointer-events:none}
+
+.ssp-in{
+  position:relative; z-index:1;
+  display:grid; align-items:center;
+  grid-template-columns:auto minmax(0,max-content) minmax(36px,1fr) auto minmax(36px,1fr) minmax(0,max-content) auto;
+  grid-template-areas:"rl tl g1 core g2 tr rr";
+  max-width:1680px; margin:0 auto;
+  min-height:clamp(200px,16.5cqw,284px);
+  padding:clamp(8px,1cqw,16px) clamp(14px,2.6cqw,44px);
+}
+
+/* ---------- Selos das campanhas: laço sobre fundo neon na cor do mês, com a frase embaixo ---------- */
+.ssp-rl,.ssp-rr{display:flex; flex-direction:column; align-items:center; gap:clamp(6px,.7cqw,10px); width:clamp(96px,10.5cqw,160px)}
+.ssp-rl{grid-area:rl; margin-right:clamp(6px,1cqw,16px)}
+.ssp-rr{grid-area:rr; margin-left:clamp(6px,1cqw,16px)}
+.ssp-flt{display:block; animation:ssp-flutua 7s ease-in-out infinite}
+.ssp-rr .ssp-flt{animation-delay:-3.5s}
+.ssp-selo{--sz:clamp(62px,6.4cqw,100px); position:relative; display:grid; place-items:center; width:var(--sz); height:var(--sz); border-radius:50%}
+.ssp-selo::before{content:""; position:absolute; inset:-14%; border-radius:50%; z-index:-1;
+  background:radial-gradient(circle,color-mix(in srgb,var(--rc) 55%,transparent) 0%,color-mix(in srgb,var(--rc) 22%,transparent) 45%,transparent 70%)}
+.ssp-selo::after{content:""; position:absolute; inset:0; border-radius:50%; pointer-events:none;
+  border:1.5px solid color-mix(in srgb,var(--rc) 80%,#fff 20%);
+  box-shadow:0 0 10px color-mix(in srgb,var(--rc) 75%,transparent),0 0 26px color-mix(in srgb,var(--rc) 35%,transparent),inset 0 0 14px color-mix(in srgb,var(--rc) 40%,transparent);
+  background:radial-gradient(circle at 50% 40%,color-mix(in srgb,var(--rc) 26%,transparent),color-mix(in srgb,var(--rc) 8%,transparent) 70%)}
+.ssp-rib{position:relative; z-index:1; display:block; height:calc(var(--sz) * .76); width:auto; overflow:visible; transform-origin:50% 45%;
+  filter:drop-shadow(0 0 6px color-mix(in srgb,var(--rc) 60%,transparent))}
+.ssp-cap{max-width:15ch; text-align:center; text-wrap:balance;
+  font:600 clamp(10px,.86cqw,12.5px)/1.3 "DM Sans",system-ui,sans-serif; letter-spacing:.01em;
+  color:color-mix(in srgb,var(--rc) 35%,#e8f1ff 65%)}
+.ssp-acende .ssp-selo::after{animation:ssp-anel 1.1s ease-out}
+@keyframes ssp-anel{0%{box-shadow:0 0 10px var(--rc),0 0 26px color-mix(in srgb,var(--rc) 35%,transparent)}
+  15%{box-shadow:0 0 18px var(--rc),0 0 46px color-mix(in srgb,var(--rc) 70%,transparent),inset 0 0 22px color-mix(in srgb,var(--rc) 60%,transparent)}
+  100%{box-shadow:0 0 10px color-mix(in srgb,var(--rc) 75%,transparent),0 0 26px color-mix(in srgb,var(--rc) 35%,transparent),inset 0 0 14px color-mix(in srgb,var(--rc) 40%,transparent)}}
+.ssp-run{fill:none; stroke-linecap:round; stroke-dasharray:16 84; stroke-dashoffset:100; opacity:0}
+.ssp-acende .ssp-rib{animation:ssp-bate 1.1s cubic-bezier(.2,.7,.3,1)}
+.ssp-acende .ssp-run{animation:ssp-corre 1.1s cubic-bezier(.3,.6,.4,1)}
+.ssp-acende .ssp-run.r2{animation-delay:.08s}
+@keyframes ssp-flutua{0%,100%{transform:translateY(-2px) rotate(-1deg)}50%{transform:translateY(2px) rotate(1deg)}}
+@keyframes ssp-bate{
+  0%{transform:scale(1)}
+  12%{transform:scale(1.08); filter:brightness(1.35) drop-shadow(0 0 10px var(--rc))}
+  26%{transform:scale(1)}
+  40%{transform:scale(1.045); filter:brightness(1.2) drop-shadow(0 0 8px var(--rc))}
+  62%,100%{transform:scale(1)}
+}
+/* meses de tema delicado: sem batida, só um brilho lento */
+.ssp-sobrio .ssp-acende .ssp-rib{animation:ssp-respira 2.4s ease-in-out}
+.ssp-sobrio .ssp-acende .ssp-run{animation-duration:2.4s}
+.ssp-sobrio .ssp-acende .ssp-selo::after{animation-duration:2.4s}
+@keyframes ssp-respira{0%,100%{filter:drop-shadow(0 0 6px color-mix(in srgb,var(--rc) 60%,transparent))}50%{filter:brightness(1.15) drop-shadow(0 0 9px var(--rc))}}
+@keyframes ssp-corre{0%{stroke-dashoffset:100; opacity:1}85%{opacity:1}100%{stroke-dashoffset:0; opacity:0}}
+
+/* ---------- Textos ---------- */
+.ssp-tl{grid-area:tl; text-align:left}
+.ssp-tr{grid-area:tr; text-align:right; display:grid}
+.ssp-tl,.ssp-tr{max-width:26cqw}
+.ssp-tr>*{grid-area:1/1; transition:opacity .55s ease, transform .55s ease, filter .55s ease}
+.ssp-tr>[aria-hidden="true"]{opacity:0; transform:translateY(6px); filter:blur(3px); pointer-events:none}
+.ssp-t1{display:block;
+  font:800 clamp(15px,1.66cqw,26px)/1.12 Sora,system-ui,sans-serif;
+  letter-spacing:.07em; text-transform:uppercase; color:#fff; text-wrap:balance;
+  text-shadow:0 0 18px color-mix(in srgb,var(--c1) 65%,transparent)}
+.ssp-tr .ssp-t1{text-shadow:0 0 18px color-mix(in srgb,var(--c2) 65%,transparent)}
+.ssp-rule{display:block; height:2px; margin:.5em 0 .55em; width:100%; border-radius:2px;
+  background:linear-gradient(90deg,var(--cl),color-mix(in srgb,var(--c1) 60%,transparent) 55%,transparent);
+  box-shadow:0 0 10px color-mix(in srgb,var(--c1) 60%,transparent)}
+.ssp-tr .ssp-rule{background:linear-gradient(270deg,var(--cl),color-mix(in srgb,var(--c2) 60%,transparent) 55%,transparent);
+  box-shadow:0 0 10px color-mix(in srgb,var(--c2) 60%,transparent)}
+.ssp-t2{display:block; max-width:25ch; text-wrap:balance;
+  font:500 clamp(11px,1.02cqw,15px)/1.4 "DM Sans",system-ui,sans-serif; color:var(--ssp-mut)}
+.ssp-tr .ssp-t2{margin-left:auto}
+.ssp-t2 a{color:inherit; text-decoration:underline; text-decoration-color:color-mix(in srgb,var(--cl) 50%,transparent); text-underline-offset:3px}
+.ssp-t2 a:hover{color:#fff}
+.ssp-t2 a:focus-visible{outline:2px solid var(--cl); outline-offset:3px; border-radius:3px}
+
+/* dado oficial: número em destaque e fonte */
+.ssp-num{display:block; font:800 clamp(22px,2.5cqw,38px)/1 Sora,system-ui,sans-serif; letter-spacing:.01em; color:#fff;
+  font-variant-numeric:tabular-nums; text-shadow:0 0 22px color-mix(in srgb,var(--c2) 70%,transparent)}
+.ssp-fonte{display:block; margin-top:.5em; font:600 clamp(9.5px,.78cqw,11.5px)/1.2 "DM Sans",system-ui,sans-serif;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ssp-dim)}
+.ssp-fonte::before{content:""; display:inline-block; width:6px; height:6px; margin-right:6px; vertical-align:.08em; border-radius:50%;
+  background:var(--ssp-green); box-shadow:0 0 8px var(--ssp-green)}
+
+/* ---------- Marca ao centro ---------- */
+.ssp-core{grid-area:core; display:flex; flex-direction:column; align-items:center; text-align:center; padding:0 clamp(6px,1cqw,14px)}
+.ssp-logo{position:relative; display:block; line-height:0}
+.ssp-logo::before{content:""; position:absolute; inset:-22% -30%; z-index:-1; pointer-events:none;
+  background:radial-gradient(ellipse at 50% 50%,rgba(64,208,191,.26),rgba(68,176,234,.12) 38%,transparent 66%)}
+.ssp-emb{display:block; height:clamp(98px,9.9cqw,166px); width:auto; image-rendering:auto;
+  filter:drop-shadow(0 0 7px rgba(64,208,191,.5)) drop-shadow(0 0 22px color-mix(in srgb,var(--c1) 30%,transparent))}
+.ssp-logofx{position:absolute; left:-12%; top:-12%; width:124%; height:124%; pointer-events:none; mix-blend-mode:screen}
+.ssp-wm{margin-top:.45em !important; white-space:nowrap;
+  font:800 clamp(13px,1.55cqw,23px)/1 Sora,system-ui,sans-serif; letter-spacing:.05em; color:#fff;
+  text-shadow:0 0 16px rgba(64,208,191,.35)}
+.ssp-wm b{font-weight:800; background:linear-gradient(90deg,var(--ssp-teal),var(--ssp-green)); -webkit-background-clip:text; background-clip:text; color:transparent}
+.ssp-by{margin-top:.38em !important; font:500 clamp(10px,.84cqw,13px)/1 "DM Sans",system-ui,sans-serif; color:#9FB2CB; letter-spacing:.02em}
+/* o nosso trabalho, em destaque: placa de vidro com borda no degradê da marca, no padrão das funções do Nelson no site */
+.ssp .ssp-tag{margin-top:.6em; line-height:1}
+.ssp-tag span{display:inline-flex; align-items:center; gap:.65em; padding:.5em 1.05em; border-radius:10px;
+  font:700 clamp(10.5px,.95cqw,14px)/1 Sora,system-ui,sans-serif; letter-spacing:.14em; text-transform:uppercase; color:#eef6ff;
+  border:1px solid transparent;
+  background:linear-gradient(180deg,rgba(16,35,59,.82),rgba(6,13,24,.82)) padding-box,linear-gradient(90deg,#4DB0E8,#66DF93) border-box;
+  box-shadow:0 0 16px rgba(77,176,232,.28),inset 0 0 10px rgba(102,223,147,.12);
+  text-shadow:0 0 12px rgba(77,176,232,.45)}
+.ssp-tag span::before,.ssp-tag span::after{content:""; width:2px; height:1.1em; border-radius:2px; flex:none;
+  background:linear-gradient(180deg,#4DB0E8,#66DF93); box-shadow:0 0 8px rgba(102,223,147,.6)}
+
+/* ---------- Pausa (acessibilidade: animação contínua precisa poder parar) ---------- */
+.ssp-pausa{position:absolute; z-index:2; right:10px; bottom:8px; width:28px; height:28px; padding:0; border-radius:50%;
+  display:grid; place-items:center; cursor:pointer; color:#cfe0f5;
+  background:rgba(4,8,14,.55); border:1px solid rgba(207,224,245,.16); opacity:.5; transition:opacity .2s, border-color .2s}
+.ssp-pausa:hover,.ssp-pausa:focus-visible{opacity:1; border-color:rgba(207,224,245,.5)}
+.ssp-pausa:focus-visible{outline:2px solid var(--cl); outline-offset:2px}
+.ssp-pausa svg{width:12px; height:12px; fill:currentColor}
+.ssp-parado .ssp-flt{animation-play-state:paused}
+
+/* ---------- Celular e faixas estreitas ---------- */
+@container ssp (max-width:760px){
+  .ssp-in{
+    grid-template-columns:auto 1fr 1fr auto;
+    grid-template-areas:"rl core core rr" "tl tl tr tr";
+    row-gap:10px; min-height:0; padding:10px 12px 14px;
+  }
+  .ssp-rl,.ssp-rr{width:clamp(76px,21cqw,100px); margin:0}
+  .ssp-selo{--sz:clamp(50px,14cqw,64px)}
+  .ssp-cap{font-size:10px; max-width:16ch; line-height:1.25}
+  .ssp-emb{height:clamp(80px,21cqw,100px)}
+  .ssp-wm{font-size:clamp(12.5px,3.6cqw,15px)}   /* marca completa também no celular: nome, by e consultoria */
+  .ssp-by{font-size:10.5px}
+  .ssp-tag span{white-space:nowrap; font-size:9.5px; letter-spacing:.06em; padding:.55em .75em; gap:.45em}
+  .ssp .ssp-tag{margin-top:.6em}
+  .ssp-tl,.ssp-tr{max-width:none; align-self:start}
+  .ssp-tl{padding-right:8px}
+  .ssp-tr{padding-left:8px}
+  .ssp-t1{font-size:clamp(12.5px,3.6cqw,15.5px); letter-spacing:.05em}
+  .ssp-t2{font-size:clamp(11px,3cqw,13px)}
+  .ssp-num{font-size:clamp(20px,6cqw,26px)}
+  .ssp-fonte{font-size:10px}
+  .ssp-pausa{bottom:6px; right:auto; left:50%; transform:translateX(-50%); width:24px; height:24px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .ssp-flt,.ssp-acende .ssp-rib,.ssp-acende .ssp-run,.ssp-acende .ssp-selo::after{animation:none}
+  .ssp-logofx{display:none}
+  .ssp-tr>*{transition:none}
+  .ssp-pausa{display:none}
+}
+
+/* ---------- Faixa fina das páginas internas ----------
+   A mesma campanha do mês em uma linha, no alto da página, sem empurrar o conteúdo.
+   Laço(s) no selo neon, nome do mês, mensagem e o convite para ver a campanha no Início. */
+.ssf{
+  --c1:#2E8BFF; --c2:#2E8BFF; --cl:#A9D2FF;
+  container-type:inline-size; container-name:ssf;
+  position:relative; display:block; overflow:hidden; isolation:isolate;
+  text-decoration:none; color:#EEF5FF;
+  background:linear-gradient(90deg,color-mix(in srgb,var(--c1) 15%,#04080e),#04080e 32%,#04080e 68%,color-mix(in srgb,var(--c2) 15%,#04080e));
+}
+.ssf *{box-sizing:border-box}
+/* linha de luz da base, na cor da campanha */
+.ssf::before{content:""; position:absolute; left:0; right:0; bottom:0; height:1px; z-index:0; pointer-events:none;
+  background:linear-gradient(90deg,transparent,color-mix(in srgb,var(--c1) 75%,transparent) 18%,color-mix(in srgb,var(--c2) 75%,transparent) 82%,transparent)}
+/* o feixe que corre a linha */
+.ssf::after{content:""; position:absolute; left:0; bottom:-1px; width:22%; height:3px; z-index:1; pointer-events:none; opacity:0;
+  border-radius:3px; transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,var(--c1) 45%,var(--c2) 78%,#fff);
+  box-shadow:0 0 10px var(--c2),0 0 24px color-mix(in srgb,var(--c1) 65%,transparent)}
+.ssf-luz::after{animation:ssf-corre 2.1s cubic-bezier(.45,.05,.55,.95) 2}
+.ssp-sobrio.ssf-luz::after{animation-iteration-count:1; box-shadow:0 0 8px var(--c2),0 0 16px color-mix(in srgb,var(--c1) 45%,transparent)}
+@keyframes ssf-corre{0%{transform:translateX(-100%); opacity:0}8%{opacity:1}88%{opacity:1}100%{transform:translateX(560%); opacity:0}}
+
+.ssf-in{position:relative; z-index:2; display:flex; align-items:center; justify-content:center; gap:14px;
+  max-width:1080px; min-height:46px; margin:0 auto; padding:5px 22px}
+.ssf-selos{display:flex; align-items:center; flex:none}
+.ssf .ssp-flt{animation:none}
+.ssf .ssp-flt+.ssp-flt{margin-left:-7px}
+.ssf .ssp-selo{--sz:34px}
+.ssf .ssp-selo::before{inset:-22%}
+.ssf .ssp-rib{filter:drop-shadow(0 0 4px color-mix(in srgb,var(--rc) 65%,transparent))}
+
+.ssf-tx{display:flex; align-items:center; gap:14px; min-width:0}
+.ssf-nome{flex:none; white-space:nowrap;
+  font:800 13px/1.2 Sora,system-ui,sans-serif; letter-spacing:.08em; text-transform:uppercase; color:#fff;
+  text-shadow:0 0 14px color-mix(in srgb,var(--c1) 70%,transparent)}
+.ssf-msg{position:relative; min-width:0; padding-left:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font:500 13.5px/1.35 "DM Sans",system-ui,sans-serif; color:#B4C6DD}
+.ssf-msg::before{content:""; position:absolute; left:0; top:50%; width:2px; height:15px; margin-top:-7.5px; border-radius:2px;
+  background:linear-gradient(180deg,var(--cl),var(--c2)); box-shadow:0 0 8px color-mix(in srgb,var(--c2) 70%,transparent)}
+.ssf-ch{font-weight:700; color:#fff}
+.ssf-cel{display:none; font-weight:700; color:#fff}
+.ssf-ver{flex:none; display:inline-flex; align-items:center; gap:5px; margin-left:4px; padding:4px 10px 4px 12px; border-radius:99px;
+  border:1px solid color-mix(in srgb,var(--c1) 55%,transparent);
+  font:600 12.5px/1.2 "DM Sans",system-ui,sans-serif; color:color-mix(in srgb,var(--cl) 60%,#fff 40%);
+  transition:border-color .2s,background-color .2s,color .2s}
+.ssf-ver svg{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.ssf:hover .ssf-ver,.ssf:focus-visible .ssf-ver{border-color:var(--cl); background-color:color-mix(in srgb,var(--c1) 20%,transparent); color:#fff}
+.ssf:focus-visible{outline:2px solid var(--cl); outline-offset:-3px}
+
+/* telas médias: só a chamada */
+@container ssf (max-width:900px){
+  .ssf-ac{display:none}
+}
+/* celular: nome em cima, chamada embaixo, seta à direita */
+@container ssf (max-width:640px){
+  .ssf-in{justify-content:flex-start; gap:10px; min-height:48px; padding:6px 14px}
+  .ssf .ssp-selo{--sz:30px}
+  .ssf-tx{flex-direction:column; align-items:flex-start; gap:1px}
+  .ssf-nome{white-space:normal; font-size:12px; letter-spacing:.06em}
+  .ssf-msg{padding-left:0; font-size:12.5px}
+  .ssf-msg::before{display:none}
+  .ssf-ver{margin-left:auto; padding:6px; border-radius:50%}
+  .ssf-vt{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
+  .ssf-tem-cel .ssf-ch{display:none}
+  .ssf-tem-cel .ssf-cel{display:inline}
+}
+@media (prefers-reduced-motion:reduce){
+  .ssf::after{display:none}
+  .ssf-ver{transition:none}
+}
+@media print{.ssf{display:none}}
